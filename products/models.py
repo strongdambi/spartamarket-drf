@@ -20,8 +20,8 @@ class product(models.Model):
     title = models.CharField(max_length=300)
     content = models.TextField()
     image = models.ImageField(upload_to="images/")
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name="products")
-    tags = models.ManyToManyField(Tag, blank=True, related_name="products")
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name="category_products")
+    tags = models.ManyToManyField(Tag, blank=True, related_name="tag_products")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
