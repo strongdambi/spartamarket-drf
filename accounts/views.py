@@ -10,6 +10,7 @@ class AccountAPIView(APIView):
         password_check = request.data.get('password_check')
         
         # create_user() 메서드에 비밀번호 확인 과정이 없어서 추가
+        
         if password != password_check:
             error_message = {"error": "비밀번호가 일치하지 않습니다."}
             return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
