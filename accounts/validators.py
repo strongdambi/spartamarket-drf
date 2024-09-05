@@ -1,6 +1,6 @@
-from django.core.exceptions import ValidationError  # ValidationError 예외 처리
-from django.core.validators import validate_email as django_validate_email  # 이메일 형식 검증
-from .models import User  # User 모델 가져오기
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email as django_validate_email 
+from .models import User
 
 def validate_user_data(signup_data):
     # 사용자 입력 데이터를 검증 후 필드별로 오류 메시지를 딕셔너리 형태로 반환
@@ -35,3 +35,15 @@ def validate_user_data(signup_data):
 
     # 오류가 있으면 False와 오류 메시지 딕셔너리 반환
     return False, err_msg_dict
+
+
+
+def validate_profile_update(current_user, target_username, new_email):
+    # 사용자 권한 검증
+    if current_user.username != target_username:
+        raise ValidationError("권한이 없어 프로필을 수정할 수 없습니다.")
+
+    # 이메일 중복 검증
+    if new_email and new_email != current_user.email and User.objects.filter(email=new_email).exists():
+        raise ValidationError("이미 사용 중인 이메일입니다.")
+

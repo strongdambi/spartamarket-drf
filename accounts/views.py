@@ -4,11 +4,12 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 from .models import User
-from .serializers import SignUpSerializer, SignInSerializer, ProfileSerializer
-from .validators import validate_user_data
+from .serializers import SignUpSerializer, SignInSerializer, ProfileSerializer, ProfileUpdateSerializer
+from .validators import validate_user_data, validate_profile_update
 
 class SignUpView(APIView):
     def post(self, request):
@@ -71,23 +72,45 @@ class SignOutView(APIView):
             # 리프레시 토큰 객체 생성 및 유효성 검사
             refresh_token = RefreshToken(refresh_token_str)
         except TokenError as e:
-            # 블랙리스트에 이미 등록된 경우 예외 처리
             return Response({"msg": "This token is already blacklisted."}, status=400)
 
-        # 블랙리스트에 추가
         refresh_token.blacklist()
         return Response(status=status.HTTP_200_OK)
 
 
 class ProfileView(APIView):
-    # 인증된 사용자만 접근 가능
     permission_classes = [IsAuthenticated]
 
     def get(self, request, username):
-        # 요청한 username이 일치하는지 확인
         if request.user.username != username:
             return Response(
                 {"error": "권한이 없어 프로필을 조회할 수 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = ProfileSerializer(request.user)
         return Response(serializer.data)
+
+
+class ProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, username):
+        # 수정할 사용자 정보, 이메일
+        user = get_object_or_404(User, username=username)
+        new_email = request.data.get('email')
+
+        try:
+            # 통합 검증 함수 호출 (권한과 이메일 중복 검증)
+            validate_profile_update(request.user, username, new_email)
+
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 사용자 정보 업데이트
+        serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
