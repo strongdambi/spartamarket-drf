@@ -9,10 +9,9 @@ class User(AbstractUser):
         ("other", "other"),
     )
 
-    name = models.CharField(max_length=50, blank=True)
-    nickname = models.CharField(max_length=50, blank=True)
-    date_of_birth = models.DateField(null=True)
-    gender = models.CharField(max_length=10, choices=GENDERS)
+    nickname = models.CharField(max_length=50)
+    date_of_birth = models.DateField()
+    gender = models.CharField(max_length=10, choices=GENDERS, blank=True)
     bio = models.TextField(blank=True)
 
     def __str__(self):
