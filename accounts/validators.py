@@ -82,8 +82,5 @@ def validate_password_change(user, current_password, new_password, new_password_
 
 # 비밀번호 검증
 def validate_delete_account(user, password):
-    """
-    사용자 계정을 삭제하기 전 비밀번호가 맞는지 검증하는 함수.
-    """
     if not check_password(password, user.password):
         raise ValidationError({"password": "비밀번호가 일치하지 않습니다."})

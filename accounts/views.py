@@ -11,7 +11,7 @@ from .models import User
 from .serializers import SignUpSerializer, SignInSerializer, ProfileSerializer, ProfileUpdateSerializer
 from .validators import validate_user_data, validate_profile_update, validate_password_change, validate_delete_account
 
-# views.py
+
 class AccountView(APIView):
     #회원가입 로직
     def post(self, request): 
@@ -86,12 +86,11 @@ class SignOutView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-# views.py
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, username):
-        """프로필 조회 로직"""
+        # 프로필 조회 로직
         if request.user.username != username:
             return Response({"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -99,7 +98,7 @@ class ProfileView(APIView):
         return Response(serializer.data)
 
     def put(self, request, username):
-        """프로필 수정 로직"""
+        # 프로필 수정 로직
         user = get_object_or_404(User, username=username)
         new_email = request.data.get('email')
         is_valid, error_messages = validate_profile_update(request.user, username, new_email)
