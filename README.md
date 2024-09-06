@@ -10,7 +10,7 @@ Django REST Framework를 사용하여 spartamarket 재구성
 - 상품 태그 기능
 
 ## ERD
-![ERD_spartamarket_DRF](ERD_spartamarket_DRF.png)
+![ERD_spartamarket_DRF](ERD_spartamarket_DRF.drawio.png)
 
 ## API 명세
 
