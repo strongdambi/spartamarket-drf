@@ -37,13 +37,22 @@ def validate_user_data(signup_data):
     return False, err_msg_dict
 
 
-
 def validate_profile_update(current_user, target_username, new_email):
+    # 오류 메시지 딕셔너리 초기화
+    err_msg_dict = {}
+
     # 사용자 권한 검증
     if current_user.username != target_username:
-        raise ValidationError("권한이 없어 프로필을 수정할 수 없습니다.")
+        err_msg_dict['permission'] = "권한이 없어 프로필을 수정할 수 없습니다."
 
     # 이메일 중복 검증
     if new_email and new_email != current_user.email and User.objects.filter(email=new_email).exists():
-        raise ValidationError("이미 사용 중인 이메일입니다.")
+        err_msg_dict['email'] = "이미 사용 중인 이메일입니다."
+
+    # 오류 메시지 딕셔너리가 비어 있으면 유효성 통과
+    if not err_msg_dict:
+        return True, None
+
+    # 오류가 있으면 False와 오류 메시지 딕셔너리 반환
+    return False, err_msg_dict
 

@@ -13,7 +13,7 @@ from .validators import validate_user_data, validate_profile_update
 
 class SignUpView(APIView):
     def post(self, request):
-        # 사용자 입력 데이터 검증
+        # 사용자 입력 데이터 검증 호출
         is_valid, error_message = validate_user_data(request.data)
 
         # 오류가 있으면 모든 오류 메시지를 반환
@@ -48,7 +48,7 @@ class SignInView(APIView):
         # 사용자 인증
         user = authenticate(username=username, password=password)
 
-        #인증 실패: 401 반환
+        # 인증 실패: 401 반환
         if not user:
             return Response({"error": "유저네임 또는 비밀번호가 올바르지 않습니다."}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -71,7 +71,7 @@ class SignOutView(APIView):
         try:
             # 리프레시 토큰 객체 생성 및 유효성 검사
             refresh_token = RefreshToken(refresh_token_str)
-        except TokenError as e:
+        except TokenError:
             return Response({"msg": "This token is already blacklisted."}, status=400)
 
         refresh_token.blacklist()
@@ -94,16 +94,14 @@ class ProfileUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, username):
-        # 수정할 사용자 정보, 이메일
-        user = get_object_or_404(User, username=username)
-        new_email = request.data.get('email')
+        user = get_object_or_404(User, username=username) # 수정할 사용자 정보 가져오기
+        new_email = request.data.get('email') # 이메일 가져오기
 
-        try:
-            # 통합 검증 함수 호출 (권한과 이메일 중복 검증)
-            validate_profile_update(request.user, username, new_email)
+        # 검증 로직 호출
+        is_valid, error_messages = validate_profile_update(request.user, username, new_email)
 
-        except ValidationError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        if not is_valid:
+            return Response({"error": error_messages}, status=status.HTTP_400_BAD_REQUEST)
 
         # 사용자 정보 업데이트
         serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
@@ -112,5 +110,3 @@ class ProfileUpdateView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
