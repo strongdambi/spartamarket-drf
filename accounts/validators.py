@@ -1,7 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email as django_validate_email 
+from django.contrib.auth.hashers import check_password
 from .models import User
 
+# 회원가입 검증
 def validate_user_data(signup_data):
     # 사용자 입력 데이터를 검증 후 필드별로 오류 메시지를 딕셔너리 형태로 반환
     err_msg_dict = {}
@@ -37,6 +39,7 @@ def validate_user_data(signup_data):
     return False, err_msg_dict
 
 
+# 프로필 업데이트 검증
 def validate_profile_update(current_user, target_username, new_email):
     # 오류 메시지 딕셔너리 초기화
     err_msg_dict = {}
@@ -56,3 +59,22 @@ def validate_profile_update(current_user, target_username, new_email):
     # 오류가 있으면 False와 오류 메시지 딕셔너리 반환
     return False, err_msg_dict
 
+
+# 비밀번호 변경 검증
+def validate_password_change(user, current_password, new_password, new_password_confirm):
+    errors = {}
+
+    # 현재 비밀번호가 일치하는지 확인
+    if not check_password(current_password, user.password):
+        errors['current_password'] = "현재 비밀번호가 일치하지 않습니다."
+
+    # 새 비밀번호와 확인 비밀번호가 일치하는지 확인
+    if new_password != new_password_confirm:
+        errors['new_password'] = "새 비밀번호가 일치하지 않습니다."
+
+    # 새 비밀번호가 기존 비밀번호와 동일한지 확인
+    if check_password(new_password, user.password):
+        errors['new_password_same'] = "새 비밀번호가 기존 비밀번호와 같을 수 없습니다."
+
+    if errors:
+        raise ValidationError(errors)

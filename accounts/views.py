@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from .models import User
-from .serializers import SignUpSerializer, SignInSerializer, ProfileSerializer, ProfileUpdateSerializer
+from .serializers import SignUpSerializer, SignInSerializer, ProfileSerializer, ProfileUpdateSerializer, validate_password_change
 from .validators import validate_user_data, validate_profile_update
 
 class SignUpView(APIView):
@@ -110,3 +110,25 @@ class ProfileUpdateView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        new_password_confirm = request.data.get('new_password_confirm')
+
+        try:
+            # 패스워드 변경 검증 로직 호출
+            validate_password_change(user, current_password, new_password, new_password_confirm)
+        except ValidationError as e:
+            return Response({"error": e.message_dict}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 비밀번호 저장
+        user.set_password(new_password)
+        user.save()
+
+        return Response({"success": "비밀번호가 성공적으로 변경되었습니다."}, status=status.HTTP_200_OK)
