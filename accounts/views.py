@@ -8,19 +8,17 @@ from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from .models import User
-from .serializers import SignUpSerializer, SignInSerializer, ProfileSerializer, ProfileUpdateSerializer, validate_password_change
-from .validators import validate_user_data, validate_profile_update
+from .serializers import SignUpSerializer, SignInSerializer, ProfileSerializer, ProfileUpdateSerializer
+from .validators import validate_user_data, validate_profile_update, validate_password_change, validate_delete_account
 
-class SignUpView(APIView):
-    def post(self, request):
-        # 사용자 입력 데이터 검증 호출
+# views.py
+class AccountView(APIView):
+    #회원가입 로직
+    def post(self, request): 
         is_valid, error_message = validate_user_data(request.data)
-
-        # 오류가 있으면 모든 오류 메시지를 반환
         if not is_valid:
             return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 사용자 생성 
         user = User.objects.create_user(
             username=request.data.get('username'),
             password=request.data.get('password'),
@@ -31,12 +29,22 @@ class SignUpView(APIView):
             date_of_birth=request.data.get('date_of_birth'),
             gender=request.data.get('gender', ''),
             bio=request.data.get('bio', '')
-            # **requset.data
         )
 
-        # 생성된 사용자 직렬화 및 응답 반환
         serializer = SignUpSerializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # 계정 삭제 로직
+    def delete(self, request): 
+        user = request.user
+        password = request.data.get('password')
+        try:
+            validate_delete_account(user, password)
+        except ValidationError as e:
+            return Response({"error": e.message_dict}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.delete()
+        return Response({"success": "계정이 성공적으로 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
 
 
 class SignInView(APIView):
@@ -78,39 +86,34 @@ class SignOutView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
+# views.py
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, username):
+        """프로필 조회 로직"""
         if request.user.username != username:
-            return Response(
-                {"error": "권한이 없어 프로필을 조회할 수 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = ProfileSerializer(request.user)
         return Response(serializer.data)
 
-
-class ProfileUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def put(self, request, username):
-        user = get_object_or_404(User, username=username) # 수정할 사용자 정보 가져오기
-        new_email = request.data.get('email') # 이메일 가져오기
-
-        # 검증 로직 호출
+        """프로필 수정 로직"""
+        user = get_object_or_404(User, username=username)
+        new_email = request.data.get('email')
         is_valid, error_messages = validate_profile_update(request.user, username, new_email)
 
         if not is_valid:
             return Response({"error": error_messages}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 사용자 정보 업데이트
         serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 
 class PasswordChangeView(APIView):
     permission_classes = [IsAuthenticated]

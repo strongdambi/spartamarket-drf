@@ -89,7 +89,7 @@ Django REST Framework를 사용하여 spartamarket 재구성
 - **응답**: 성공 시 상태 코드 200
 
 #### 2. 본인 정보 수정
-- **Endpoint**: `/api/accounts/<str:username>/update/`
+- **Endpoint**: `/api/accounts/<str:username>`
 - **Method**: `PUT`
 - **조건**: 로그인 상태, `email`, `first_name`, `last_name`, `nickname`, `date_of_birth` 필수, `gender`, `bio`는 선택
 - **검증**: 로그인한 사용자만 본인 프로필 수정 가능

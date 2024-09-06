@@ -62,19 +62,28 @@ def validate_profile_update(current_user, target_username, new_email):
 
 # 비밀번호 변경 검증
 def validate_password_change(user, current_password, new_password, new_password_confirm):
-    errors = {}
+    err_msg_dict = {}
 
     # 현재 비밀번호가 일치하는지 확인
     if not check_password(current_password, user.password):
-        errors['current_password'] = "현재 비밀번호가 일치하지 않습니다."
+        err_msg_dict['current_password'] = "현재 비밀번호가 일치하지 않습니다."
 
     # 새 비밀번호와 확인 비밀번호가 일치하는지 확인
     if new_password != new_password_confirm:
-        errors['new_password'] = "새 비밀번호가 일치하지 않습니다."
+        err_msg_dict['new_password'] = "새 비밀번호가 일치하지 않습니다."
 
     # 새 비밀번호가 기존 비밀번호와 동일한지 확인
     if check_password(new_password, user.password):
-        errors['new_password_same'] = "새 비밀번호가 기존 비밀번호와 같을 수 없습니다."
+        err_msg_dict['new_password_same'] = "새 비밀번호가 기존 비밀번호와 같을 수 없습니다."
 
-    if errors:
-        raise ValidationError(errors)
+    if err_msg_dict:
+        raise ValidationError(err_msg_dict)
+
+
+# 비밀번호 검증
+def validate_delete_account(user, password):
+    """
+    사용자 계정을 삭제하기 전 비밀번호가 맞는지 검증하는 함수.
+    """
+    if not check_password(password, user.password):
+        raise ValidationError({"password": "비밀번호가 일치하지 않습니다."})

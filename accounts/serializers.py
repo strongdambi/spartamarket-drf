@@ -30,3 +30,4 @@ class ProfileSerializer(MyBaseSerializer):
 class ProfileUpdateSerializer(MyBaseSerializer):
     class Meta(MyBaseSerializer.Meta):
         fields = ['email', 'first_name', 'last_name', 'nickname', 'date_of_birth', 'gender', 'bio']
+        
