@@ -39,7 +39,7 @@ Django REST Framework를 사용하여 spartamarket 재구성
   - 실패 시: 오류 메시지 반환
 
 #### 3. 프로필 조회
-- **Endpoint**: `/api/accounts/<str:username>/profile/`
+- **Endpoint**: `/api/accounts/<str:username>/`
 - **Method**: `GET`
 - **조건**: 로그인 상태 필요
 - **검증**: 로그인한 사용자만 자신의 프로필 조회 가능
