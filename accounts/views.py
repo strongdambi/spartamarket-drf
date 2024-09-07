@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from .models import User
 from .serializers import SignUpSerializer, SignInSerializer, ProfileSerializer, ProfileUpdateSerializer
-from .validators import validate_user_data, validate_profile_update, validate_password_change, validate_delete_account
+from .validators import validate_user_data, validate_profile_update, validate_password_change, validate_delete_account, validate_refresh_token
 
 
 class AccountView(APIView):
@@ -76,12 +76,14 @@ class SignOutView(APIView):
 
     def post(self, request):
         refresh_token_str = request.data.get("refresh_token")
-        try:
-            # 리프레시 토큰 객체 생성 및 유효성 검사
-            refresh_token = RefreshToken(refresh_token_str)
-        except TokenError:
-            return Response({"msg": "This token is already blacklisted."}, status=400)
 
+        try:
+            # 검증 함수 호출
+            refresh_token = validate_refresh_token(refresh_token_str)
+        except ValidationError as e:
+            return Response({"error": e.message_dict}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 리프레시 토큰 블랙리스트 처리
         refresh_token.blacklist()
         return Response(status=status.HTTP_200_OK)
 
@@ -89,23 +91,26 @@ class SignOutView(APIView):
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
+    # 프로필 조회 로직
     def get(self, request, username):
-        # 프로필 조회 로직
         if request.user.username != username:
             return Response({"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = ProfileSerializer(request.user)
         return Response(serializer.data)
-
+    
+    # 프로필 수정 로직
     def put(self, request, username):
-        # 프로필 수정 로직
-        user = get_object_or_404(User, username=username)
-        new_email = request.data.get('email')
-        is_valid, error_messages = validate_profile_update(request.user, username, new_email)
+        # 사용자 권한 및 이메일 중복 검증 호출
+        is_valid, error_messages = validate_profile_update(request.user, username, request.data.get('email'))
 
         if not is_valid:
             return Response({"error": error_messages}, status=status.HTTP_400_BAD_REQUEST)
 
+        # 사용자 정보 가져오기 (권한 검증 통과 후)
+        user = get_object_or_404(User, username=username)
+
+        # 사용자 정보 업데이트
         serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -118,6 +123,7 @@ class PasswordChangeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
+        # print("뷰가 왜 호출이 안되냐고!!!!")
         user = request.user
         current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')

@@ -1,3 +1,5 @@
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email as django_validate_email 
 from django.contrib.auth.hashers import check_password
@@ -60,6 +62,19 @@ def validate_profile_update(current_user, target_username, new_email):
     return False, err_msg_dict
 
 
+
+# 리프레시 토큰 검증
+def validate_refresh_token(refresh_token_str):
+    if not refresh_token_str:
+        raise ValidationError({"refresh_token": "refresh_token is required."})
+
+    try:
+        # 리프레시 토큰 객체 생성 및 유효성 검사
+        return RefreshToken(refresh_token_str)
+    except TokenError:
+        raise ValidationError({"refresh_token": "This token is already blacklisted."})
+
+
 # 비밀번호 변경 검증
 def validate_password_change(user, current_password, new_password, new_password_confirm):
     err_msg_dict = {}
@@ -80,7 +95,7 @@ def validate_password_change(user, current_password, new_password, new_password_
         raise ValidationError(err_msg_dict)
 
 
-# 비밀번호 검증
+# 계정 삭제 시 비밀번호 검증
 def validate_delete_account(user, password):
     if not check_password(password, user.password):
         raise ValidationError({"password": "비밀번호가 일치하지 않습니다."})
