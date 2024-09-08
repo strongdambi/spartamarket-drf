@@ -3,6 +3,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import AccountView, SignInView, SignOutView, ProfileView, PasswordChangeView
 
+app_name = "accounts"
 urlpatterns = [
     path('', AccountView.as_view()),  # 회원가입(POST) & 계정삭제(DELETE)
     path('login/', SignInView.as_view()),
