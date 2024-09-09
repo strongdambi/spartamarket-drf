@@ -15,7 +15,7 @@ class Tag(models.Model):
         return self.name
 
 
-class product(models.Model):
+class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=300)
     content = models.TextField()
