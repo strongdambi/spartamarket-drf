@@ -6,8 +6,7 @@ from django.contrib.auth.hashers import check_password
 from .models import User
 
 # 회원가입 검증
-def validate_user_data(signup_data):
-    # 사용자 입력 데이터를 검증 후 필드별로 오류 메시지를 딕셔너리 형태로 반환
+def validate_user_data(signup_data):  # 사용자 입력 데이터를 검증 후 필드별로 오류 메시지를 딕셔너리 형태로 반환
     err_msg_dict = {}
 
     # 데이터 추출
@@ -33,7 +32,7 @@ def validate_user_data(signup_data):
     if User.objects.filter(email=email).exists():
         err_msg_dict['email'] = "이미 사용 중인 이메일입니다."
 
-    # 오류 메시지 딕셔너리가 비어 있으면 유효성 통과
+    # 오류 메시지 딕셔너리가 비어 있으면 통과
     if not err_msg_dict:
         return True, None
 
@@ -54,7 +53,7 @@ def validate_profile_update(current_user, target_username, new_email):
     if new_email and new_email != current_user.email and User.objects.filter(email=new_email).exists():
         err_msg_dict['email'] = "이미 사용 중인 이메일입니다."
 
-    # 오류 메시지 딕셔너리가 비어 있으면 유효성 통과
+    # 오류 메시지 딕셔너리가 비어 있으면 통과
     if not err_msg_dict:
         return True, None
 
@@ -62,14 +61,12 @@ def validate_profile_update(current_user, target_username, new_email):
     return False, err_msg_dict
 
 
-
 # 리프레시 토큰 검증
 def validate_refresh_token(refresh_token_str):
     if not refresh_token_str:
         raise ValidationError({"refresh_token": "refresh_token is required."})
 
-    try:
-        # 리프레시 토큰 객체 생성 및 유효성 검사
+    try:  # 리프레시 토큰 객체 생성 및 유효성 검사
         return RefreshToken(refresh_token_str)
     except TokenError:
         raise ValidationError({"refresh_token": "This token is already blacklisted."})

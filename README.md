@@ -1,21 +1,30 @@
-# spartamarket-drf
+# Spartamarket_DRF
 Django REST Framework를 사용하여 spartamarket 재구성
 
 ## 주요 기능
 - 사용자 인증 (회원가입, 로그인, 로그아웃)
 - 사용자 프로필 관리
 - 상품 등록, 조회, 수정, 삭제 기능(CRUD)
-- 사용자 간 팔로우 기능
-- 상품 좋아요 기능
-- 상품 태그 기능
+- 카테고리 별 상품 등록 조회 기능
 
 ## ERD
-![ERD_spartamarket_DRF](ERD_spartamarket_DRF)
+![ERD_spartamarket_DRF](ERD_spartamarket_DRF.png)
 
-## API 명세
+- `User`: 사용자 정보를 담는 테이블
+- `Product`: 상품 정보를 담고 있으며, 사용자와 연결
+- `Category`: 상품의 카테고리를 관리하며, 상품과 다대일 관계
+
+## 설치 및 실행
+
+### 1. 가상 환경 설정
+```bash
+python -m venv venv
+source venv/Scripts/activate  # windews
+source venv/bin/activate  # mac
+
+
+## Postman API 문서
 https://documenter.getpostman.com/view/37990286/2sAXjRXVkN
-
-## 필수 구현
 
 ### 사용자 인증
 #### 1. 회원가입
@@ -77,8 +86,7 @@ https://documenter.getpostman.com/view/37990286/2sAXjRXVkN
 
 ---
 
-### **상품 관련 기능 및 조건 (상품 등록 / 상품 목록 조회 / 상품 수정 / 상품 삭제)**
-
+### 상품 관련 기능 및 조건
 #### 1. 상품 등록
 - **Endpoint**: `/api/products`
 - **Method**: `POST`
