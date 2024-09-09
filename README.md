@@ -17,7 +17,6 @@ Django REST Framework를 사용하여 spartamarket 재구성
 ## 설치 및 실행
 
 ### 1. 가상 환경 설정
-```bash
 python -m venv venv
 source venv/Scripts/activate  # windews
 source venv/bin/activate  # mac
