@@ -44,5 +44,3 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
         # 부모 클래스의 get_permissions 호출하여 설정된 권한 반환
         return super().get_permissions()
-
-
