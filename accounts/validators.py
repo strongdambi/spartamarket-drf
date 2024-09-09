@@ -36,7 +36,7 @@ def validate_user_data(signup_data):  # 사용자 입력 데이터를 검증 후
     if not err_msg_dict:
         return True, None
 
-    # 오류가 있으면 False와 오류 메시지 딕셔너리 반환
+    # 오류가 메시지 딕셔너리가 채워 있다면 오류 메시지 딕셔너리 반환
     return False, err_msg_dict
 
 
@@ -57,7 +57,7 @@ def validate_profile_update(current_user, target_username, new_email):
     if not err_msg_dict:
         return True, None
 
-    # 오류가 있으면 False와 오류 메시지 딕셔너리 반환
+    # 오류가 메시지 딕셔너리가 채워 있다면 오류 메시지 딕셔너리 반환
     return False, err_msg_dict
 
 

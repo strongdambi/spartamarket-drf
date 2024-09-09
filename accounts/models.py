@@ -18,10 +18,10 @@ class User(AbstractUser):
         return self.username
     
     def soft_delete(self):
-        self.is_active = False
+        self.is_active = False  # is_active False로 만들어 계정 비활성화
         self.save()
         return True
     
     def delete(self, using=None, keep_parents=False):
-        self.soft_delete()
+        self.soft_delete()  # delete()를 사용하게 오버라이딩
         return True
