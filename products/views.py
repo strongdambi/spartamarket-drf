@@ -11,6 +11,10 @@ class ProductViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]  # 필터링 기능 추가
     search_fields = ['title', 'content', 'user__username']  # 제목, 내용, 사용자 이름으로 검색 가능
 
+    # 로그인한 사용자를 user 필드에 자동으로 넣기
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     def update(self, request, *args, **kwargs):
         product = self.get_object()  # 수정할 상품 가져오기
         author_check = product_update_author(request, product)  # 작성자 검증
