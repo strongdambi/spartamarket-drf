@@ -16,18 +16,18 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def update(self, request, *args, **kwargs):
-        product = self.get_object()  # 수정할 상품 가져오기
+        product = self.get_object()  # 수정할 상품
         author_check = product_update_author(request, product)  # 작성자 검증
         if author_check:
-            return author_check  # 작성자가 아니면 에러 반환
-        return super().update(request, *args, **kwargs)  # 기본 수정 로직 수행
+            return author_check  # 작성자가 아니면 에러
+        return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         product = self.get_object()  # 삭제할 상품 가져오기
         author_check = product_delete_author(request, product)  # 작성자 검증
         if author_check:
             return author_check  # 작성자가 아니면 에러 반환
-        return super().destroy(request, *args, **kwargs)  # 기본 삭제 로직 수행
+        return super().destroy(request, *args, **kwargs)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -36,11 +36,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     # get_permissions 메서드를 오버라이딩하여 액션별로 권한을 다르게 설정
     def get_permissions(self):
-        # create, update, partial_update, destroy 액션에는 IsAdminUser 권한을 적용
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             self.permission_classes = [IsAdminUser]  # 관리자만 접근 가능
         else:
             self.permission_classes = [AllowAny]  # 조회 관련 액션은 누구나 접근 가능
-
-        # 부모 클래스의 get_permissions 호출하여 설정된 권한 반환
         return super().get_permissions()
